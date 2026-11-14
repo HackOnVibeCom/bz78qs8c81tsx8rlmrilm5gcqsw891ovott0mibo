@@ -1,140 +1,101 @@
-# ⚡ ChallengeChain
+<p align="center">
+  <img src="public/assets/illustrations/friendly-rivalry.png" alt="Friends enjoying a ChallengeChain quiz together" width="560">
+</p>
 
-**AI-powered viral challenge platform** — built for HackOnVibe November 2026.
+<h1 align="center">⚡ ChallengeChain</h1>
 
-**Live demo:** [cc.tendry.mg](http://cc.tendry.mg) · [Start a challenge](http://cc.tendry.mg/create)
+<p align="center"><strong>Make a challenge. Start a chain.</strong></p>
 
-Create an AI-generated challenge → share one link → friends play instantly → scores & leaderboards → they share their result → new users join. The viral loop, end to end.
+<p align="center">Create a quiz from a topic, send one link, and see how your friends score. Anyone can create or play without an account.</p>
 
-> Stack: **PHP 8.3+ (native MVC) · SQLite 3 (PDO) · Vanilla JS (Fetch API) · No frameworks**
-
----
-
-## Features
-
-| Priority | Feature |
-|----------|---------|
-| P1 | Registration / login / logout / password reset (secure tokens) |
-| P1 | OpenRouter free AI challenge generator (OpenAI-compatible REST via PHP cURL) + **demo mode** without a key |
-| P1 | Challenge engine: start, answer, server-side scoring, retry, attempt history |
-| P1 | Unique public URLs `/challenge/{slug}` + shareable `/result/{publicId}` pages |
-| P2 | Leaderboards (score, speed tie-break, best-per-player), personal rank |
-| P2 | Dashboard: created / completed / participants / views / referral visits / activity |
-| P2 | Explore: search, categories, trending / recent / popular sorts |
-| P2 | Open Graph metadata, WhatsApp / Facebook / X / native share, copy-link |
-| P2 | Referral tracking (`?ref=CODE`) + referral analytics |
-| P3 | XP, badges, achievements |
-
-**Security:** PDO prepared statements everywhere · CSRF tokens (forms + `X-CSRF-Token`) · output escaping `e()` · secure session cookies (`HttpOnly`, `SameSite=Lax`, `Secure` under HTTPS) · `session_regenerate_id()` on login · login rate limiting · AI generation rate limiting · server-side score calculation · duplicate-submission protection (409) · answers **never** sent to the browser before submission · safe error pages (no internal paths/credentials exposed).
+<p align="center">
+  <a href="http://cc.tendry.mg/">🌐 Live app</a> ·
+  <a href="http://cc.tendry.mg/create">✨ Create a challenge</a> ·
+  <a href="https://youtu.be/J8VG_bTYnw4">▶ Watch the 2:52 customer journey</a>
+</p>
 
 ---
 
-## Requirements
+## HackOnVibe submission at a glance
 
-- PHP **8.3+** with `pdo_sqlite`, `sqlite3`, `curl`, `mbstring`, `openssl`
-- Apache with `mod_rewrite` (or Nginx equivalent)
-- HTTPS in production
-- Writable `storage/` directory
+| | |
+|---|---|
+| **Project** | ChallengeChain · solo project for HackOnVibe November 2026 |
+| **Try it** | [cc.tendry.mg](http://cc.tendry.mg/) — no sign-up required |
+| **See the journey** | [2:52 video](https://youtu.be/J8VG_bTYnw4) showing what to click and the result |
+| **What spreads** | A challenge link brings in a player; their result gives them a reason to share the next link |
+| **Stack** | PHP 8.3+ · SQLite · vanilla JavaScript · OpenRouter-compatible AI · optional Docker |
+| **Verification** | `php tests/run.php` — **127 checks passing** on the submitted code |
 
----
+> **For judges:** Open the [live app](http://cc.tendry.mg/), choose **Create challenge**, publish one, then open its link in a private window to play as a guest. The PHP app runs on a VPS. HackOnVibe's automatic site publishing is disabled for this event, so its `verify` job can fail even when the repository build succeeds; the submitted live app URL is the one to test.
 
-## Installation
+**Jump to:** [Customer journey](#the-customer-journey) · [Features](#what-works-today) · [Run locally](#run-it-locally) · [Docker](#run-with-docker) · [Verification](#verification-and-safeguards)
+
+## Why this exists
+
+Most quizzes end when the first group finishes. ChallengeChain makes the result the start of another round: a player sees their score, checks the leaderboard, and shares it with a friend. The friend can play immediately, with no registration step in the way.
+
+The product focuses on one action that is easy to repeat: **create → share → play → compare → share again**.
+
+```mermaid
+flowchart LR
+    A[Pick a topic] --> B[Publish a challenge]
+    B --> C[Share one link]
+    C --> D[Friend plays as a guest]
+    D --> E[Score and leaderboard]
+    E --> F[Share the result]
+    F --> C
+    classDef sun fill:#f9df64,stroke:#20201e,stroke-width:2px,color:#20201e;
+    classDef mint fill:#c1edaa,stroke:#20201e,stroke-width:2px,color:#20201e;
+    classDef lavender fill:#d8cbf5,stroke:#20201e,stroke-width:2px,color:#20201e;
+    class A,B sun;
+    class C,F mint;
+    class D,E lavender;
+```
+
+## The customer journey
+
+| Step | What happens | Where |
+|---|---|---|
+| **1. Create** | Pick a category, topic, difficulty, language and question count. Generate questions with AI or the built-in demo bank, review them, and publish. | [`/create`](http://cc.tendry.mg/create) |
+| **2. Share** | The published challenge gets a unique link. Copy it or use the available share options. | `/challenge/{slug}` |
+| **3. Play** | A friend opens the link, enters a name and answers without an account. | `/challenge/{slug}/play` |
+| **4. Compare** | The server scores the attempt. The result and leaderboard show the score, number correct and rank. | `/result/{publicId}` · `/challenge/{slug}/leaderboard` |
+| **5. Continue** | The player shares the result or starts a rematch, bringing the next person in. | Result page |
+
+<p align="center">
+  <img src="public/assets/illustrations/quiz-time.png" alt="Illustration of a playful ChallengeChain quiz" width="460">
+</p>
+
+## What works today
+
+- **Guest-first flow.** Creating and playing challenges do not require an account. Accounts add a dashboard and profile.
+- **Real challenge engine.** Questions, attempts and scores are stored in SQLite; answers are checked on the server and are not sent to players before submission.
+- **Shareable results.** Each challenge and completed attempt has a public URL, with Open Graph metadata and sharing options.
+- **Leaderboards.** The best attempt per player is ranked by score, with completion time breaking ties.
+- **Creator insights.** Signed-in creators can see challenge views, participants, shares, referral visits and recent activity.
+- **Optional AI.** OpenRouter-compatible generation is available with a server-side key; the app remains usable in clearly labelled demo mode without one.
+
+### AI, with a working fallback
+
+`AI_API_KEY` is optional. With a key, the backend requests structured quiz questions from the configured OpenRouter-compatible endpoint and validates the response before saving it. If the key is empty, a built-in question bank generates **Demo mode** challenges. The API key stays on the server; visitors never need one.
+
+The default model route in [`.env.example`](.env.example) is `openrouter/free`. Availability of live generation depends on the configured provider and its limits; the demo path remains available without an external AI service.
+
+## Run it locally
+
+Requirements: PHP **8.3+** with `pdo_sqlite`, `sqlite3`, `curl`, `mbstring` and `openssl`, plus Composer.
 
 ```bash
-# 1. Clone / upload the project, then:
-composer install          # generates the autoloader (no external packages needed)
-
-# 2. Configure environment
+composer install
 cp .env.example .env
-# Edit .env: APP_URL, AI_API_KEY (optional), etc.
-
-# 3. Create the SQLite database (outside public/)
 php scripts/migrate.php
-
-# 4. Optional: demo user + demo challenges + achievements
-php scripts/seed.php
-
-# 5. Run locally
-composer serve            # → http://localhost:8000
+composer serve
 ```
 
-### Demo credentials (after seeding)
+Open [http://localhost:8000](http://localhost:8000). On PowerShell, `Copy-Item .env.example .env` works in place of `cp`. Leave `AI_API_KEY` empty to try the full guest flow in demo mode. Optional local sample challenges: `php scripts/seed.php`.
 
-| Field | Value |
-|-------|-------|
-| Email | `demo@challengechain.dev` |
-| Password | `demo1234` |
-
-4 public demo challenges are seeded (clearly labelled **Demo**).
-
----
-
-## Configuration (`.env`)
-
-| Key | Default | Description |
-|-----|---------|-------------|
-| `APP_URL` | `http://localhost:8000` | Public base URL — used for share links & OG tags (no trailing slash) |
-| `DB_PATH` | `storage/database.sqlite` | SQLite file (must stay outside the web root) |
-| `AI_API_KEY` | *(empty)* | OpenRouter API key, stored server-side in `.env`. **Empty = DEMO MODE** (labelled in UI) |
-| `AI_BASE_URL` | `https://openrouter.ai/api/v1` | OpenRouter endpoint (OpenAI-compatible) |
-| `AI_MODEL` | `openrouter/free` | Routes to free models only; no paid fallback configured |
-| `LOGIN_MAX_ATTEMPTS` | `5` | Per 15 min window, per IP+email |
-| `AI_MAX_PER_HOUR` | `6` | Per user |
-| `MAIL_ENABLED` | `false` | Password-reset email delivery (falls back to debug link) |
-
-### Demo mode
-
-With no `AI_API_KEY`, generation uses a built-in question bank (8 categories × ~12 questions) and every generated challenge is flagged **Demo mode** in the UI. Add a key to enable real AI generation — the JSON is validated (`AIService::validatePayload`) before any DB insert, with one stricter retry on invalid output.
-
----
-
-## Commands
-
-```bash
-php scripts/migrate.php   # apply migrations (idempotent)
-php scripts/seed.php      # demo data (idempotent)
-php tests/run.php         # 127 checks: auth, AI, scoring, URLs, referrals, rate limits, XSS, SQLite
-php scripts/check-ai.php  # generate and validate 3 questions using the configured AI (no publishing)
-composer serve            # PHP built-in server on :8000
-```
-
----
-
-## Project structure
-
-```text
-challengechain/
-├── app/
-│   ├── Controllers/       # Home, Auth, Explore, Challenge, Create, Dashboard, Profile, Api
-│   ├── Models/            # User, Challenge, Question, Attempt, Achievement, PasswordReset
-│   ├── Services/          # AIService, ChallengeService, AttemptService, ScoringService,
-│   │                      # ReferralService, GamificationService, DemoQuestionBank
-│   ├── Core/              # Database (PDO+WAL+FK), Router, Auth, Csrf, View, RateLimiter
-│   ├── Views/             # layouts (main/auth/bare) + templates + partials
-│   ├── helpers.php        # env(), config(), e(), url(), csrf(), flash…
-│   └── auth_helpers.php
-├── config/config.php      # reads .env
-├── database/migrations/   # 001_initial_schema (11 tables, FKs, indexes, uniques)
-├── database/seeds/
-├── public/                # front controller index.php, .htaccess, assets/
-├── routes/web.php         # all web + API routes
-├── scripts/               # migrate.php, seed.php
-├── storage/               # database.sqlite + logs/ (never web-accessible)
-├── tests/run.php
-├── .env.example
-├── bootstrap.php
-└── composer.json
-```
-
----
-
-## Production deployment
-
-The interactive app uses PHP and SQLite and is hosted on a PHP-capable VPS. Cloudflare Pages can publish a static page from this repository, but it cannot execute `public/index.php`. Judges should use the live demo URL above.
-
-### Docker (optional)
-
-The Docker setup runs PHP 8.4 with Apache and stores SQLite data in a named volume. It is independent of the existing VPS installation.
+### Run with Docker
 
 ```bash
 cp .env.example .env
@@ -142,64 +103,50 @@ docker compose up --build -d
 docker compose ps
 ```
 
-Open `http://localhost:8080`. The container applies database migrations when it starts. Set `AI_API_KEY` in the untracked `.env` file to use live AI; without it, the app uses demo mode. `docker compose down` stops the app while keeping the database volume.
+Open [http://localhost:8080](http://localhost:8080). The PHP 8.4/Apache container runs migrations at startup; a named Docker volume keeps the SQLite database when the container stops. `docker compose down` leaves that volume intact. Set `DOCKER_APP_URL` and `CHALLENGECHAIN_PORT` if you use a reverse proxy or another local port.
 
-For a reverse proxy or another port, set `DOCKER_APP_URL` to the public URL and `CHALLENGECHAIN_PORT` to the local listening port before starting Compose. The Compose port binds to `127.0.0.1` so a reverse proxy on the host can serve it.
+## Architecture
 
-### Manual PHP deployment
-
-1. Upload the project **above** the web root; point the vhost document root at `public/`.
-2. `composer install --no-dev` and set `APP_ENV=production`, `APP_DEBUG=false` in `.env`.
-3. Set `APP_URL=https://your-domain.com` (required for correct share/OG links).
-4. Run `php scripts/migrate.php` (and `seed.php` only if you want demo data).
-5. Ensure `storage/` is writable by the PHP user and **not** served by the web server.
-6. Enforce HTTPS + HSTS at the server level (session cookies are marked `Secure` automatically).
-7. Apache: `mod_rewrite` + `AllowOverride All` (rules are in `public/.htaccess`).
-   Nginx equivalent:
-
-```nginx
-root /var/www/challengechain/public;
-index index.php;
-location / {
-    try_files $uri $uri/ /index.php?$query_string;
-}
-location ~ \.php$ {
-    fastcgi_pass unix:/run/php/php8.3-fpm.sock;
-    include fastcgi_params;
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-}
-location ~ /storage { deny all; }
+```text
+app/              Controllers, Models, Services, Views and core helpers
+config/           Environment-backed application settings
+database/         SQLite migrations
+public/           Web root: index.php, styles, scripts and illustrations
+routes/web.php    Public pages, authenticated pages and JSON API routes
+scripts/          Migration, seed, AI diagnostics and deployment helpers
+storage/          SQLite database and logs (outside the web root)
+tests/            Application, security and HTTP resource checks
+docker/           Apache virtual host and container startup script
 ```
 
----
+The app uses native PHP MVC, PDO prepared statements and vanilla JavaScript. The web server must point to `public/`; the repository's root `index.html` is only a static landing page that links to the PHP app.
 
-## Customer journey (implemented end-to-end)
+### Configuration
 
-1. Visit `/` → explore public challenges at `/explore`
-2. Create a challenge at `/create` or play as a guest; registration is optional
-3. Generate a challenge at `/create` (category · topic · difficulty · count · language)
-4. Publish → unique link `/challenge/{slug}`
-5. Share: copy link, native share, WhatsApp, Facebook, X (+ OG previews)
-6. Friend opens the link (no account required)
-7. Plays at `/challenge/{slug}/play` (name prompt for guests)
-8. Score calculated **server-side** (100 pts/correct, +25 perfect bonus, time tie-break)
-9. Views the leaderboard at `/challenge/{slug}/leaderboard`
-10. Shares their result at `/result/{publicId}` → new users arrive → loop repeats
+| Key | Purpose |
+|---|---|
+| `APP_URL` | Public URL for share links and previews; omit the trailing slash. |
+| `DB_PATH` | SQLite file, kept outside `public/`. |
+| `AI_API_KEY` | Optional server-side AI key; empty enables demo mode. |
+| `AI_BASE_URL` / `AI_MODEL` | OpenRouter-compatible endpoint and model route. |
+| `APP_ENV` / `APP_DEBUG` | Use `production` / `false` on a public server. |
 
----
+Copy [`.env.example`](.env.example) to `.env` for the full list. `.env`, `vendor/`, SQLite data and logs are excluded from Git and from the Docker build context.
 
-## Testing
+## Verification and safeguards
 
 ```bash
 php tests/run.php
 ```
 
-Covers: environment, all 11 tables + pragmas, registration/login (`password_hash`/`password_verify`), demo AI generation, invalid AI payload rejection, challenge creation + slug uniqueness, **no-answer-leak before submission**, perfect/partial/zero scoring, duplicate submission (409), foreign-attempt authorization (403), leaderboard ordering, public URLs, share/referral tracking, rate limiting, router matching, XSS escaping, transaction rollback + FK enforcement, seed data, gamification.
+The **127 passing checks** cover registration and login, AI validation and demo fallback, guest publishing, scoring, duplicate submissions, leaderboards, public links, referrals, rate limits, escaping, database migrations and browser resource paths.
 
-Manual E2E verified: register → dashboard → generate → publish → public page → guest start → submit → result → leaderboard → duplicate 409 → missing CSRF 419 → explore search → profile → share counter → referral link → demo login.
+The app also uses CSRF tokens, escaped output, server-side scoring, rate limits and secure session settings under HTTPS. It does not publish correct answers before an attempt is submitted.
 
----
+## Deployment note
+
+The live PHP application is hosted separately on a PHP-capable VPS at [cc.tendry.mg](http://cc.tendry.mg/). Cloudflare Pages can serve the static landing page in this repository, but it cannot execute `public/index.php`. For a manual PHP deployment, point the web server document root to `public/`, install Composer dependencies, set production environment values, run migrations and allow the PHP user to write to `storage/`.
 
 ## License
 
-MIT — HackOnVibe November 2026.
+MIT, as declared in [`composer.json`](composer.json).
