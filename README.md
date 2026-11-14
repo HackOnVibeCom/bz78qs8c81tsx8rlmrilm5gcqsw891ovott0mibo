@@ -132,6 +132,22 @@ challengechain/
 
 The interactive app uses PHP and SQLite and is hosted on a PHP-capable VPS. Cloudflare Pages can publish a static page from this repository, but it cannot execute `public/index.php`. Judges should use the live demo URL above.
 
+### Docker (optional)
+
+The Docker setup runs PHP 8.4 with Apache and stores SQLite data in a named volume. It is independent of the existing VPS installation.
+
+```bash
+cp .env.example .env
+docker compose up --build -d
+docker compose ps
+```
+
+Open `http://localhost:8080`. The container applies database migrations when it starts. Set `AI_API_KEY` in the untracked `.env` file to use live AI; without it, the app uses demo mode. `docker compose down` stops the app while keeping the database volume.
+
+For a reverse proxy or another port, set `DOCKER_APP_URL` to the public URL and `CHALLENGECHAIN_PORT` to the local listening port before starting Compose. The Compose port binds to `127.0.0.1` so a reverse proxy on the host can serve it.
+
+### Manual PHP deployment
+
 1. Upload the project **above** the web root; point the vhost document root at `public/`.
 2. `composer install --no-dev` and set `APP_ENV=production`, `APP_DEBUG=false` in `.env`.
 3. Set `APP_URL=https://your-domain.com` (required for correct share/OG links).

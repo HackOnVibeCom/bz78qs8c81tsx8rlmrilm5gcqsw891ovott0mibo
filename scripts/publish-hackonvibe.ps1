@@ -23,8 +23,8 @@ if ((git -C $target branch --show-current).Trim() -ne 'main') {
     throw 'The deployment clone must be on the main branch.'
 }
 
-$rootFiles = @('.env.example', '.gitignore', 'README.md', 'bootstrap.php', 'composer.json', 'composer.lock', 'index.html')
-$sourceDirs = @('app', 'config', 'database', 'public', 'routes', 'scripts', 'tests')
+$rootFiles = @('.dockerignore', '.env.example', '.gitattributes', '.gitignore', 'Dockerfile', 'README.md', 'bootstrap.php', 'compose.yaml', 'composer.json', 'composer.lock', 'index.html')
+$sourceDirs = @('app', 'config', 'database', 'docker', 'public', 'routes', 'scripts', 'tests')
 $copied = New-Object System.Collections.Generic.List[string]
 
 foreach ($relative in $rootFiles) {
