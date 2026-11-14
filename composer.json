@@ -1,0 +1,27 @@
+{
+    "name": "hackonvibe/challengechain",
+    "description": "ChallengeChain — AI-powered viral challenge platform (HackOnVibe November 2026)",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "ChallengeChain\\": "app/"
+        },
+        "files": [
+            "app/helpers.php",
+            "app/auth_helpers.php"
+        ]
+    },
+    "scripts": {
+        "migrate": "php scripts/migrate.php",
+        "seed": "php scripts/seed.php",
+        "test": "php tests/run.php",
+        "serve": "php -S localhost:8000 -t public public/index.php"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

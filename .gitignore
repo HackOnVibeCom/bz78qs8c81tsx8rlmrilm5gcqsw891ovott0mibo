@@ -1,0 +1,14 @@
+/vendor/
+.env
+/.env.*
+!/.env.example
+/storage/*
+!/storage/.gitkeep
+!/storage/logs/
+/storage/logs/*
+!/storage/logs/.gitkeep
+/public/uploads/
+/public/logs/
+.DS_Store
+Thumbs.db
+/.preview/
